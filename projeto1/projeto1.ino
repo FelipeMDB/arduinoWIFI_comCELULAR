@@ -1,16 +1,3 @@
-/*
- WiFiEsp example: WebServerAP
-
- A simple web server that shows the value of the analog input 
- pins via a web page using an ESP8266 module.
- This sketch will start an access point and print the IP address of your
- ESP8266 module to the Serial monitor. From there, you can open
- that address in a web browser to display the web page.
- The web page will be automatically refreshed each 20 seconds.
-
- For more details see: http://yaab-arduino.blogspot.com/p/wifiesp.html
-*/
-
 #include "WiFiEsp.h"
 
 // Emulate Serial1 on pins 6/7 if not present
@@ -40,26 +27,26 @@ void setup()
 
   // check for the presence of the shield
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
+    Serial.println("WiFi shield nao esta presente");
     while (true); // don't continue
   }
 
-  Serial.print("Attempting to start AP ");
+  Serial.print("Tentando inicializar AP ");
   Serial.println(ssid);
 
-  // uncomment these two lines if you want to set the IP address of the AP
+  // "settar IP do PC"
   IPAddress localIp(177, 220, 18, 102);
   WiFi.configAP(localIp);
   
   // start access point
   status = WiFi.beginAP(ssid, 10, pass, ENC_TYPE_WPA2_PSK);
 
-  Serial.println("Access point started");
+  Serial.println("Ponto de acesso inicializado");
   printWifiStatus();
   
   // start the web server on port 80
   server.begin();
-  Serial.println("Server started");
+  Serial.println("Servidor inicializado");
 }
 
 
@@ -68,7 +55,7 @@ void loop()
   WiFiEspClient client = server.available();  // listen for incoming clients
 
   if (client) {                               // if you get a client,
-    Serial.println("New client");             // print a message out the serial port
+    Serial.println("Novo cliente");             // print a message out the serial port
     buf.init();                               // initialize the circular buffer
     while (client.connected()) {              // loop while the client's connected
       if (client.available()) {               // if there's bytes to read from the client,
@@ -136,11 +123,15 @@ void sendHttpResponse(WiFiEspClient client)
     "\r\n");
   client.print("<!DOCTYPE HTML>\r\n");
   client.print("<html>\r\n");
-  client.print("<h1>Ola turma ....</h1>\r\n");
+  client.print("<body style=\"background: yellow\">\r\n");
+  client.print("<center>\r\n");
+  client.print("<h1>Liga e desliga com Wifi</h1>\r\n");
   client.print("<br>\r\n");
    // \"/H\"
-  client.print(" <br><br><br><form method=\"get\" action=\"LG\"><button type=\"submit\">LIGAR</button></form>");
-  client.print(" <br><br><br><form method=\"get\" action=\"DS\"><button type=\"submit\">DESLIGAR</button></form>");
+  client.print(" <br><br><br><form method=\"get\" action=\"LG\"><button style=\"background: green\" type=\"submit\">LIGAR</button></form>");
+  client.print(" <br><br><br><form method=\"get\" action=\"DS\"><button style=\"background: red\" type=\"submit\">DESLIGAR</button></form>");
+  client.print("</center>\r\n");
+  client.print("</body>\r\n");
   client.print("</html>\r\n");
  
  
