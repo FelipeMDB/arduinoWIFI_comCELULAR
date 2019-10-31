@@ -76,7 +76,6 @@ void loop()
           buf.reset();
           Serial.println(" Ligado");
         }
-        //se termina com "DS" deve-se desligar o rele
         else if (buf.endsWith("GET /DS?")){
           digitalWrite(2, HIGH);
           buf.reset();              
@@ -106,7 +105,7 @@ void printWifiStatus()
 
   // printa pra onde esta sendo mandado no browser (o IP e como se conectar a ele)
   Serial.println();
-  Serial.print("Para ver esta pagina funcionando, conecte-se a");
+  Serial.print("Para ver esta pagina funcionando, conecte-se a ");
   Serial.print(ssid);
   Serial.print(" e abra uma pagina para http://");
   Serial.println(ip);
