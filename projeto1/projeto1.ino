@@ -1,6 +1,6 @@
 #include "WiFiEsp.h"
 #include "SoftwareSerial.h"
-SoftwareSerial Serial1a(8, 9); // RX, TX
+SoftwareSerial Serial1a(8, 9); // RX, TX  inicia porta para recepção e transmissão
 //#endif
 
 char ssid[] = "TSE_FELIPEBRITTO";         // SSID da rede (nome)
@@ -8,7 +8,7 @@ char pass[] = "RA:18200";        // senha da rede
 int status = WL_IDLE_STATUS;     // status do WIfi
 int reqCount = 0;                // numero de respostas recebidas
 
-WiFiEspServer server(80);
+WiFiEspServer server(80); //porta que será utilizada
 
 // ringBuffer para aumentar a memória e diminuir a quantidade de memória gasta
 RingBuffer buf(8);
@@ -67,14 +67,19 @@ void loop()
           break;
         }
 
+
+        //codigo para açoes vindas da pagina HTML
+
+        //se a resposta termina com "LG" deve-se ligar o rele
         if (buf.endsWith("GET /LG?")){
           digitalWrite(2, LOW);
           buf.reset();
           Serial.println(" Ligado");
         }
+        //se termina com "DS" deve-se desligar o rele
         else if (buf.endsWith("GET /DS?")){
           digitalWrite(2, HIGH);
-          buf.reset();
+          buf.reset();              
           Serial.println(" Desligado");
         }
         
@@ -99,7 +104,7 @@ void printWifiStatus()
   Serial.print("Endereço de IP: ");
   Serial.println(ip);
 
-  // printa pra onde esta sendo mandado no browser
+  // printa pra onde esta sendo mandado no browser (o IP e como se conectar a ele)
   Serial.println();
   Serial.print("Para ver esta pagina funcionando, conecte-se a");
   Serial.print(ssid);
