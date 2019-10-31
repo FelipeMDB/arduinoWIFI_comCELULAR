@@ -1,34 +1,31 @@
 #include "WiFiEsp.h"
-
-// Emulate Serial1 on pins 6/7 if not present
-//#ifndef HAVE_HWSERIAL1
 #include "SoftwareSerial.h"
 SoftwareSerial Serial1a(8, 9); // RX, TX
 //#endif
 
-char ssid[] = "TSE_FELIPEBRITTO";         // your network SSID (name)
-char pass[] = "RA:18200";        // your network password
-int status = WL_IDLE_STATUS;     // the Wifi radio's status
-int reqCount = 0;                // number of requests received
+char ssid[] = "TSE_FELIPEBRITTO";         // SSID da rede (nome)
+char pass[] = "RA:18200";        // senha da rede 
+int status = WL_IDLE_STATUS;     // status do WIfi
+int reqCount = 0;                // numero de respostas recebidas
 
 WiFiEspServer server(80);
 
-// use a ring buffer to increase speed and reduce memory allocation
+// ringBuffer para aumentar a memória e diminuir a quantidade de memória gasta
 RingBuffer buf(8);
 
 void setup()
 {
   pinMode(2, OUTPUT);
   digitalWrite(2,HIGH);
-  Serial.begin(115200);   // initialize serial for debugging
+  Serial.begin(115200);   // inicializa porta serial para debbug
    while (!Serial) ;
-  Serial1a.begin(9600);    // initialize serial for ESP module
-  WiFi.init(&Serial1a);    // initialize ESP module
+  Serial1a.begin(9600);    // inicialização serial para o módulo ESP
+  WiFi.init(&Serial1a);    // inicialização do módulo ESP
 
-  // check for the presence of the shield
+  // verifica se o "Wifi shield" está conectado
   if (WiFi.status() == WL_NO_SHIELD) {
     Serial.println("WiFi shield nao esta presente");
-    while (true); // don't continue
+    while (true); // para programa
   }
 
   Serial.print("Tentando inicializar AP ");
@@ -38,13 +35,13 @@ void setup()
   IPAddress localIp(177, 220, 18, 102);
   WiFi.configAP(localIp);
   
-  // start access point
+  // inicializa o ponto de acesso
   status = WiFi.beginAP(ssid, 10, pass, ENC_TYPE_WPA2_PSK);
 
   Serial.println("Ponto de acesso inicializado");
   printWifiStatus();
   
-  // start the web server on port 80
+  // inicializa o servidor web na porta 80
   server.begin();
   Serial.println("Servidor inicializado");
 }
@@ -52,18 +49,18 @@ void setup()
 
 void loop()
 {
-  WiFiEspClient client = server.available();  // listen for incoming clients
+  WiFiEspClient client = server.available();  // permite conexão com clientes disponíveis
 
-  if (client) {                               // if you get a client,
-    Serial.println("Novo cliente");             // print a message out the serial port
-    buf.init();                               // initialize the circular buffer
-    while (client.connected()) {              // loop while the client's connected
-      if (client.available()) {               // if there's bytes to read from the client,
-        char c = client.read();               // read a byte, then
-        buf.push(c);                          // push it to the ring buffer
+  if (client) {                               // ao receber um cliente
+    Serial.println("Novo cliente");             // printa a mensagem na porta serial
+    buf.init();                               // inicializa o buffer
+    while (client.connected()) {              // loop enquanto o cliente estiver conectado
+      if (client.available()) {               // recebeu dados do cliente
+        char c = client.read();               // lê os dados
+        buf.push(c);                          // push nas informações
         Serial.print(c);
-        // you got two newline characters in a row
-        // that's the end of the HTTP request, so send a response
+        
+        // fim do HTTP response
         if (buf.endsWith("\r\n\r\n")){
           sendHttpResponse(client);
           Serial.println("Fechando"); 
@@ -84,43 +81,46 @@ void loop()
       }
     }
     
-    // give the web browser time to receive the data
+    // tempo para o browser receber os dados
     delay(10);
 
-    // close the connection
+    // fecha a conexao
     client.stop();
-    Serial.println("Client disconnected");
+    Serial.println("Cliente desconectado");
   }
 }
 
 
+//metodo para vizualizacao do status do Wifi
 void printWifiStatus()
 {
-  // print your WiFi shield's IP address
+  // print o Wifi Shield e o endereço de IP
   IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
+  Serial.print("Endereço de IP: ");
   Serial.println(ip);
 
-  // print where to go in the browser
+  // printa pra onde esta sendo mandado no browser
   Serial.println();
-  Serial.print("To see this page in action, connect to ");
+  Serial.print("Para ver esta pagina funcionando, conecte-se a");
   Serial.print(ssid);
-  Serial.print(" and open a browser to http://");
+  Serial.print(" e abra uma pagina para http://");
   Serial.println(ip);
   Serial.println();
 }
 
 
 
-
+//codigo da pagina HTML
 
 void sendHttpResponse(WiFiEspClient client)
 {
   client.print(
     "HTTP/1.1 200 OK\r\n"
     "Content-Type: text/html\r\n"
-    "Connection: close\r\n"  // the connection will be closed after completion of the response // refresh the page automatically every 20 sec
+    "Connection: close\r\n"  // conexão será fechada depois de rodar todo o código // reinicia a pagina a cada 20seg
     "\r\n");
+
+    //corpo da pagina
   client.print("<!DOCTYPE HTML>\r\n");
   client.print("<html>\r\n");
   client.print("<body style=\"background: yellow\">\r\n");
@@ -128,8 +128,8 @@ void sendHttpResponse(WiFiEspClient client)
   client.print("<h1>Liga e desliga com Wifi</h1>\r\n");
   client.print("<br>\r\n");
    // \"/H\"
-  client.print(" <br><br><br><form method=\"get\" action=\"LG\"><button style=\"background: green\" type=\"submit\">LIGAR</button></form>");
-  client.print(" <br><br><br><form method=\"get\" action=\"DS\"><button style=\"background: red\" type=\"submit\">DESLIGAR</button></form>");
+  client.print(" <br><br><br><form method=\"get\" action=\"LG\"><button style=\"background: green\" type=\"submit\">LIGAR</button></form>");  //botao para ligar
+  client.print(" <br><br><br><form method=\"get\" action=\"DS\"><button style=\"background: red\" type=\"submit\">DESLIGAR</button></form>"); //botao para desligar
   client.print("</center>\r\n");
   client.print("</body>\r\n");
   client.print("</html>\r\n");
